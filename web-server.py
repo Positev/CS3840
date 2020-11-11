@@ -1,38 +1,35 @@
-import socket
+#import socket module
+from socket import *
+import sys # In order to terminate the program
 
-class WebServer:
-    def __init__(self, port_number = 6994):
-        self.socket_connection = socket.socket(AF_INET, SOCK_STREAM)
-        self.port_number = port_number
+serverSocket = socket(AF_INET, SOCK_STREAM)
+serverSocket.bind(('', 12001))  
+serverSocket.listen(1) 
 
-    def run(self):
-        self.socket_connection.bind('', self.port_number)
-
-        while True:
-            message = self.socket_connection.recv(1024)
-
-
-
-    def stop(self):
-        self.socket_connection.close()
-
-
-    def serve_static_resource(self, resource_file_path):
-        try:
-            with open(resource_file_path, 'r') as output_file:
-                output_data = output_file.read()
-
-            self.socket_connection.send('HTTP/1.0 200 OK\r\n\r\n'.encode())
-
-            for i in range(len(output_data)):
-                self.socket_connection.send(output_data[i].encode())
-            
-            self.socket_connection.send('\r\n'.encode())
+while True:
+#Establish the connection
+    print('Ready to serve...')
+    connectionSocket, addr = serverSocket.accept() #Fill in start #Fill in end
+    try:
+        message = connectionSocket.recv(1024) #Fill in start #Fill in end
+        filename = message.split()[1]
         
-        except OSError as e:
-            self.socket_connection.send('404 Not Found'.encode())  
+        f = open(filename[1:])
+        outputdata = f.read() #Fill in start #Fill in end
+    
+        connectionSocket.send('HTTP/1.0 200 OK\r\n\r\n'.encode('utf-8'))
         
-        except socket.error as e:
-            pass
-
-                
+        for i in range(0, len(outputdata)):
+            connectionSocket.send(outputdata[i].encode())
+        
+        connectionSocket.send("\r\n".encode())
+        connectionSocket.close()
+    except IOError as e:
+        
+        connectionSocket.send('HTTP/1.0 404 NOT FOUND\r\n\r\n'.encode('utf-8'))
+        connectionSocket.send(f"{str(filename[1:])} not found. :)".encode('utf-8'))
+        connectionSocket.send("\r\n".encode())
+        connectionSocket.close()
+        pass
+serverSocket.close()
+sys.exit()#Terminate the program after sending the corresponding data
