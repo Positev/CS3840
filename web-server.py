@@ -1,15 +1,16 @@
 #import socket module
 from socket import *
 import sys # In order to terminate the program
+from threading import Thread
 
 serverSocket = socket(AF_INET, SOCK_STREAM)
 serverSocket.bind(('', 12001))  
 serverSocket.listen(1) 
 
-while True:
+def server1(sock):
 #Establish the connection
     print('Ready to serve...')
-    connectionSocket, addr = serverSocket.accept() #Fill in start #Fill in end
+    connectionSocket, addr = sock.accept() #Fill in start #Fill in end
     try:
         message = connectionSocket.recv(1024) #Fill in start #Fill in end
         filename = message.split()[1]
@@ -31,5 +32,7 @@ while True:
         connectionSocket.send("\r\n".encode())
         connectionSocket.close()
         pass
-serverSocket.close()
-sys.exit()#Terminate the program after sending the corresponding data
+
+thread = Thread(target=server1, args=(serverSocket,))
+thread.start()
+
